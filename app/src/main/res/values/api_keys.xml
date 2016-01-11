@@ -2,6 +2,6 @@
 <resources>
     <!-- Insert your onw Google Maps API key here  -->
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
-        DUMMYKEY
+        DUMMYKEY2
     </string>
 </resources>
