@@ -3,8 +3,8 @@
     <string name="title_activity_maps">Otto automaatit</string>
 
 
-    <string name="infowindow.tv.address">Osoite</string>
-    <string name="infowindow.tv.opening_hours">Auki</string>
+    <string name="infowindow.tv.address">Osoite:\u0020</string>
+    <string name="infowindow.tv.opening_hours">Auki:\u0020</string>
     <string name="infowindow.tv.access.ep">Esteetön ja puhetuettu Otto (matala asiointikorkeus)</string>
     <string name="infowindow.tv.access.p">Puhetuettu Otto (normaali korkeus)</string>
     <string name="infowindow.tv.access.t">TalletusOtto</string>
