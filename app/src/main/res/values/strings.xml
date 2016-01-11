@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Otto automaatit</string>
+    <string name="title_activity_maps">Otto automaatit</string>
+
+
+    <string name="infowindow.tv.address">Osoite</string>
+    <string name="infowindow.tv.opening_hours">Auki</string>
+    <string name="infowindow.tv.access.ep">Esteetön ja puhetuettu Otto (matala asiointikorkeus)</string>
+    <string name="infowindow.tv.access.p">Puhetuettu Otto (normaali korkeus)</string>
+    <string name="infowindow.tv.access.t">TalletusOtto</string>
+
+
+    <string name="error.message.playservices">Sovellus ei valitettavasti toimi tällä laitteella.</string>
+
+    <string name="error.message.location">Sijaintia ei saatavilla. Tarkista asetuksista, että sijainti on päällä.</string>
+
+</resources>
