@@ -14,8 +14,8 @@ public class CustomRendering extends DefaultClusterRenderer<MarkerBean> {
 
 
     protected void onBeforeClusterItemRendered(MarkerBean item, MarkerOptions markerOptions) {
-        markerOptions.snippet(item.getOsoite());
-        markerOptions.title(item.getSijaintipaikka());
+        markerOptions.snippet(item.getAddress());
+        markerOptions.title(item.getLocationPlace());
         super.onBeforeClusterItemRendered(item, markerOptions);
     }
 }

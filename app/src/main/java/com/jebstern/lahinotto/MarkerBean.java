@@ -6,109 +6,109 @@ import com.google.maps.android.clustering.ClusterItem;
 
 public class MarkerBean implements ClusterItem {
 
-    String malli;
-    String numero;
-    String osoite;
-    String postinumero;
-    String postitoimipaikka;
-    String tyyppi;
-    String sijaintipaikka;
-    String aukioloaika;
-    String lisatiedot;
+    String model;
+    String number;
+    String address;
+    String postalCode;
+    String postOffice;
+    String type;
+    String locationPlace;
+    String openingHours;
+    String extraDetails;
     double latitude;
     double longitude;
-    private final LatLng mPosition;
+    private final LatLng position;
 
-    public MarkerBean(String malli, String numero, String osoite, String postinumero, String postitoimipaikka, String tyyppi, String sijaintipaikka, String aukioloaika, String lisatiedot, double latitude, double longitude) {
-        this.malli = malli;
-        this.numero = numero;
-        this.osoite = osoite;
-        this.postinumero = postinumero;
-        this.postitoimipaikka = postitoimipaikka;
-        this.tyyppi = tyyppi;
-        this.sijaintipaikka = sijaintipaikka;
-        this.aukioloaika = aukioloaika;
-        this.lisatiedot = lisatiedot;
+    public MarkerBean(String model, String number, String address, String postalCode, String postOffice, String type, String locationPlace, String openingHours, String extraDetails, double latitude, double longitude) {
+        this.model = model;
+        this.number = number;
+        this.address = address;
+        this.postalCode = postalCode;
+        this.postOffice = postOffice;
+        this.type = type;
+        this.locationPlace = locationPlace;
+        this.openingHours = openingHours;
+        this.extraDetails = extraDetails;
         this.latitude = latitude;
         this.longitude = longitude;
-        mPosition = new LatLng(latitude, longitude);
+        position = new LatLng(latitude, longitude);
     }
 
     @Override
     public LatLng getPosition() {
-        return mPosition;
+        return position;
     }
 
-    public String getMalli() {
-        return malli;
+    public String getModel() {
+        return model;
     }
 
-    public void setMalli(String malli) {
-        this.malli = malli;
+    public void setModel(String model) {
+        this.model = model;
     }
 
-    public String getNumero() {
-        return numero;
+    public String getNumber() {
+        return number;
     }
 
-    public void setNumero(String numero) {
-        this.numero = numero;
+    public void setNumber(String number) {
+        this.number = number;
     }
 
-    public String getOsoite() {
-        return osoite;
+    public String getAddress() {
+        return address;
     }
 
-    public void setOsoite(String osoite) {
-        this.osoite = osoite;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getPostinumero() {
-        return postinumero;
+    public String getPostalCode() {
+        return postalCode;
     }
 
-    public void setPostinumero(String postinumero) {
-        this.postinumero = postinumero;
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
     }
 
-    public String getPostitoimipaikka() {
-        return postitoimipaikka;
+    public String getPostOffice() {
+        return postOffice;
     }
 
-    public void setPostitoimipaikka(String postitoimipaikka) {
-        this.postitoimipaikka = postitoimipaikka;
+    public void setPostOffice(String postOffice) {
+        this.postOffice = postOffice;
     }
 
-    public String getTyyppi() {
-        return tyyppi;
+    public String getType() {
+        return type;
     }
 
-    public void setTyyppi(String tyyppi) {
-        this.tyyppi = tyyppi;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getSijaintipaikka() {
-        return sijaintipaikka;
+    public String getLocationPlace() {
+        return locationPlace;
     }
 
-    public void setSijaintipaikka(String sijaintipaikka) {
-        this.sijaintipaikka = sijaintipaikka;
+    public void setLocationPlace(String locationPlace) {
+        this.locationPlace = locationPlace;
     }
 
-    public String getAukioloaika() {
-        return aukioloaika;
+    public String getOpeningHours() {
+        return openingHours;
     }
 
-    public void setAukioloaika(String aukioloaika) {
-        this.aukioloaika = aukioloaika;
+    public void setOpeningHours(String openingHours) {
+        this.openingHours = openingHours;
     }
 
-    public String getLisatiedot() {
-        return lisatiedot;
+    public String getExtraDetails() {
+        return extraDetails;
     }
 
-    public void setLisatiedot(String lisatiedot) {
-        this.lisatiedot = lisatiedot;
+    public void setExtraDetails(String extraDetails) {
+        this.extraDetails = extraDetails;
     }
 
     public double getLatitude() {

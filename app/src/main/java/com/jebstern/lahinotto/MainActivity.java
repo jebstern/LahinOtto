@@ -1,15 +1,23 @@
 package com.jebstern.lahinotto;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import android.support.design.widget.Snackbar;
+
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -46,20 +54,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static int DISPLACEMENT = 10; // 10 meters
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
-    private MarkerBean clickedClusterItem;
+    private static final int REQUEST_MYLOCATION = 0;
+
+
+    public MarkerBean mClickedClusterMarkerBean;
     ClusterManager<MarkerBean> mClusterManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.main_activity);
+
+        // Obtaining SupportMapFragment
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+
+        // The callback method 'onMapReady(GoogleMap googleMap)' provides a GoogleMap instance guaranteed to be non-null and ready to be used.
+        // If Google Play services is not installed on the user's device, the callback WILL NOT be triggered until the user installs Play services.
+        mapFragment.getMapAsync(this);
 
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map); // Obtaining SupportMapFragment
-        mapFragment.getMapAsync(this); // The callback method 'onMapReady(GoogleMap googleMap)' provides a GoogleMap instance guaranteed to be non-null and ready to be used.
-
-
-        // First we need to check availability of play services
+        // First we need to check availability of Google Play services
         if (checkPlayServices()) {
             // Building the GoogleApi client
             buildGoogleApiClient();
@@ -68,6 +82,92 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         new MarkerSetupTask().execute();  // Read csv file with AsyncTask: it allows us to perform background operations and publish results directly on the UI thread
     }
+
+    //  Creating a Google API Client object
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+    }
+
+    //  Creating location request object
+    protected void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        mMap.getUiSettings().setCompassEnabled(true);
+        mMap.getUiSettings().setRotateGesturesEnabled(true);
+        mMap.getUiSettings().setTiltGesturesEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestMyLocation();
+        } else {
+            mMap.setMyLocationEnabled(true);
+        }
+
+
+
+        mClusterManager = new ClusterManager<>(getApplicationContext(), mMap);
+        mMap.setInfoWindowAdapter(mClusterManager.getMarkerManager());
+
+        mMap.setOnInfoWindowClickListener(mClusterManager);
+        mClusterManager.setOnClusterItemInfoWindowClickListener(this);
+
+        mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<MarkerBean>() {
+            @Override
+            public boolean onClusterItemClick(MarkerBean item) {
+                mClickedClusterMarkerBean = item;
+                return false;
+            }
+        });
+
+    }
+
+
+    private void requestMyLocation() {
+        Log.i(TAG, "MyLocation permission has NOT been granted. Requesting permission.");
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            // Provide an additional rationale to the user if the permission was not granted
+            // and the user would benefit from additional context for the use of the permission.
+            // For example if the user has previously denied the permission.
+            Log.i(TAG, "Displaying MyLocation permission rationale to provide additional context.");
+
+            AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
+            alert.setTitle("Permission request");
+            alert.setMessage("If you want to have your location shown, please accept the permissions.");
+
+            alert.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_MYLOCATION);
+                }
+            });
+
+            alert.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                }
+            });
+
+            alert.show();
+
+        } else {
+            // Camera permission has not been granted yet. Request it directly.
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_MYLOCATION);
+        }
+    }
+
+
 
     @Override
     public void onClusterItemInfoWindowClick(MarkerBean markerBean) {
@@ -96,8 +196,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         protected void onPostExecute(Void result) {
             mMap.setOnCameraChangeListener(mClusterManager);
             mMap.setOnMarkerClickListener(mClusterManager);
-            for (MarkerBean ottoAutomaatti : markers) {
-                mClusterManager.addItem(ottoAutomaatti);
+            for (MarkerBean ottoATM : markers) {
+                mClusterManager.addItem(ottoATM);
             }
             mClusterManager.getMarkerCollection().setOnInfoWindowAdapter(new MyCustomAdapterForItems());
         }
@@ -118,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return null;
         }
 
+
         @SuppressLint("SetTextI18n")
         @Override
         public View getInfoContents(Marker marker) {
@@ -126,15 +227,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             TextView tvOpeningHours = ((TextView) myContentsView.findViewById(R.id.tv_opening_hours));
             TextView tvAccessibility = ((TextView) myContentsView.findViewById(R.id.tv_accessibility));
 
-            tvLocation.setText(clickedClusterItem.getSijaintipaikka());
-            tvAddress.setText(getResources().getString(R.string.infowindow_tv_address) + clickedClusterItem.getOsoite());
-            tvOpeningHours.setText(getResources().getString(R.string.infowindow_tv_opening_hours) + clickedClusterItem.getAukioloaika());
+            tvLocation.setText(mClickedClusterMarkerBean.getLocationPlace());
+            tvAddress.setText(getResources().getString(R.string.infowindow_tv_address) + mClickedClusterMarkerBean.getAddress());
+            tvOpeningHours.setText(getResources().getString(R.string.infowindow_tv_opening_hours) + mClickedClusterMarkerBean.getOpeningHours());
 
-            if (clickedClusterItem.getMalli().equalsIgnoreCase("EP")) {
+            if (mClickedClusterMarkerBean.getModel().equalsIgnoreCase("EP")) {
                 tvAccessibility.setText(getResources().getString(R.string.infowindow_tv_access_ep));
-            } else if (clickedClusterItem.getMalli().equalsIgnoreCase("P")) {
+            } else if (mClickedClusterMarkerBean.getModel().equalsIgnoreCase("P")) {
                 tvAccessibility.setText(getResources().getString(R.string.infowindow_tv_access_p));
-            } else if (clickedClusterItem.getMalli().equalsIgnoreCase("T")) {
+            } else if (mClickedClusterMarkerBean.getModel().equalsIgnoreCase("T")) {
                 tvAccessibility.setText(getResources().getString(R.string.infowindow_tv_access_t));
             }
 
@@ -143,41 +244,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        checkPlayServices();
-        // Resuming the periodic location updates
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stopLocationUpdates();
-    }
-
     //  Method to display the location on UI
     private void displayLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             double latitude = mLastLocation.getLatitude();
@@ -194,28 +272,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
-        // Assign the new location
         mLastLocation = location;
         displayLocation();
     }
 
-
-    //  Creating google api client object
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API).build();
-    }
-
-    //  Creating location request object
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
-    }
 
     //  Method to verify google play services on the device
     private boolean checkPlayServices() {
@@ -234,6 +294,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // Starting the location updates
     protected void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
@@ -242,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
     }
 
-    //  Google api callback methods
+
     @Override
     public void onConnectionFailed(ConnectionResult result) {
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
@@ -250,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onConnected(Bundle arg0) {
-        // Once connected with google api, get the location
+        // Once connected with google api, get the location and star location updates
         displayLocation();
         if (mRequestingLocationUpdates) {
             startLocationUpdates();
@@ -262,32 +332,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mGoogleApiClient.connect();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        mMap.getUiSettings().setCompassEnabled(true);
-        mMap.getUiSettings().setRotateGesturesEnabled(true);
-        mMap.getUiSettings().setTiltGesturesEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        mMap.setMyLocationEnabled(true);
-
-
-        mClusterManager = new ClusterManager<>(getApplicationContext(), mMap);
-        mMap.setInfoWindowAdapter(mClusterManager.getMarkerManager());
-
-        mMap.setOnInfoWindowClickListener(mClusterManager);
-        mClusterManager.setOnClusterItemInfoWindowClickListener(this);
-
-        mClusterManager.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener<MarkerBean>() {
-            @Override
-            public boolean onClusterItemClick(MarkerBean item) {
-                clickedClusterItem = item;
-                return false;
-            }
-        });
-
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkPlayServices();
+        // Resuming the periodic location updates
+        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+            startLocationUpdates();
+        }
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stopping the periodic location updates
+        stopLocationUpdates();
+    }
+
 }
