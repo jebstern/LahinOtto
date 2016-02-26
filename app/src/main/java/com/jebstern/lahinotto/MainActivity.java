@@ -305,7 +305,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         float mindist = 0;
         int pos = 0;
 
-
         for (int i = 0; i < markers.size(); i++) {
             float[] distance = new float[1];
             Location.distanceBetween(userPosition.latitude, userPosition.longitude, markers.get(i).getLatitude(), markers.get(i).getLongitude(), distance);
