@@ -12,7 +12,6 @@
     <!-- Insert your own project number here YOUR_PROJECT_NUMBER -->
     <string name="google_app_id">611316959333</string>
 
-
     <string name="error.message.playservices">Sovellus ei valitettavasti toimi tällä laitteella.</string>
 
     <string name="error.message.location">Sijaintia ei saatavilla. Tarkista asetuksista, että sijainti on päällä.</string>
