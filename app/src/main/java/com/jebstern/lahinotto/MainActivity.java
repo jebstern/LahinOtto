@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static int UPDATE_INTERVAL = 10000; // 10 seconds
     private static int FATEST_INTERVAL = 5000; // 5 seconds
     private static int DISPLACEMENT = 10; // 10 meters
+
     private final static int REQUEST_GOOGLE_PLAY_SERVICES = 1000;
     private static final int REQUEST_MYLOCATION = 0;
 
@@ -108,12 +110,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.getUiSettings().setTiltGesturesEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestMyLocation();
-        } else {
-            mMap.setMyLocationEnabled(true);
-        }
-
+        mMap.setMyLocationEnabled(true);
 
         mClusterManager = new ClusterManager<>(getApplicationContext(), mMap);
         mMap.setInfoWindowAdapter(mClusterManager.getMarkerManager());
@@ -129,40 +126,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-    }
-
-
-    private void requestMyLocation() {
-        Log.i(TAG, "MyLocation permission has NOT been granted. Requesting permission.");
-
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            // Provide an additional rationale to the user if the permission was not granted
-            // and the user would benefit from additional context for the use of the permission.
-            // For example if the user has previously denied the permission.
-            Log.i(TAG, "Displaying MyLocation permission rationale to provide additional context.");
-
-            AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
-            alert.setTitle("Permission request");
-            alert.setMessage("If you want to have your location shown, please accept the permissions.");
-
-            alert.setPositiveButton("ACCEPT", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_MYLOCATION);
-                }
-            });
-
-            alert.setNegativeButton("DECLINE", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-
-                }
-            });
-
-            alert.show();
-
-        } else {
-            // Camera permission has not been granted yet. Request it directly.
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_MYLOCATION);
-        }
     }
 
 
@@ -243,16 +206,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     //  Method to display the location on UI
     private void displayLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             double latitude = mLastLocation.getLatitude();
@@ -292,16 +245,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // Starting the location updates
     protected void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
 
@@ -312,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     @Override
-    public void onConnectionFailed(ConnectionResult result) {
+    public void onConnectionFailed(@NonNull ConnectionResult result) {
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
 
