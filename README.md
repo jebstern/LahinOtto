@@ -7,4 +7,4 @@ This project is fully working but still under development.
 
 ## Installation and usage
 
-Download the project, open it in Android Studio. YOu should change the Google Maps api key with your onw key.
+Download the project, open it in Android Studio. You should change the Google Maps api key with your own key.
