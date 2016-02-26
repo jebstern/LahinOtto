@@ -1,27 +1,18 @@
 package com.jebstern.lahinotto;
 
-
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -36,6 +27,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener, ClusterManager.OnClusterItemInfoWindowClickListener<MarkerBean> {
@@ -52,14 +44,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     // For the sake of clarity, these local variables are displayed here
     private static int UPDATE_INTERVAL = 10000; // 10 seconds
     private static int FATEST_INTERVAL = 5000; // 5 seconds
-    private static int DISPLACEMENT = 10; // 10 meters
+    private static int DISPLACEMENT = 15; // 15 meters
 
     private final static int REQUEST_GOOGLE_PLAY_SERVICES = 1000;
-    private static final int REQUEST_MYLOCATION = 0;
 
+    private List<MarkerBean> markers;
 
-    public MarkerBean mClickedClusterMarkerBean;
-    ClusterManager<MarkerBean> mClusterManager;
+    private LatLng userPosition;
+
+    private MarkerBean mClickedClusterMarkerBean;
+    private ClusterManager<MarkerBean> mClusterManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private class MarkerSetupTask extends AsyncTask<Void, Void, Void> {
 
-        private List<MarkerBean> markers;
 
         @Override
         protected void onPreExecute() {
@@ -147,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         protected Void doInBackground(Void... params) {
             // Read a csv file from assets folder, second constructor parameter contains the file name of the csv we want to read
-            MarkerSetup setup = new MarkerSetup(getApplicationContext(), "ottokoordinaatit2015_10_23_fi.csv");
+            MarkerSetup setup = new MarkerSetup(getApplicationContext(), "ottokoordinaatit2016_02_26_fi.csv");
             markers = setup.readCsv();
             return null;
         }
@@ -211,10 +204,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             double latitude = mLastLocation.getLatitude();
             double longitude = mLastLocation.getLongitude();
 
-            LatLng userPosition = new LatLng(latitude, longitude);  // Get the position of the user
-            float zoom = mMap.getCameraPosition().zoom; // Get the zoom level that the user is using.
+            userPosition = new LatLng(latitude, longitude);  // Get the position of the user
+            float zoomLevel = mMap.getCameraPosition().zoom; // Get the zoom level that the user is using.
 
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userPosition, zoom);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userPosition, zoomLevel);
             mMap.animateCamera(cameraUpdate);
 
         } else {
@@ -256,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult result) {
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        Log.e(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
 
     @Override
@@ -306,5 +299,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Stopping the periodic location updates
         stopLocationUpdates();
     }
+
+
+    public void calculateNearestMarker(View v) {
+        float mindist = 0;
+        int pos = 0;
+
+
+        for (int i = 0; i < markers.size(); i++) {
+            float[] distance = new float[1];
+            Location.distanceBetween(userPosition.latitude, userPosition.longitude, markers.get(i).getLatitude(), markers.get(i).getLongitude(), distance);
+            if (i == 0) {
+                mindist = distance[0];
+            }
+            if (mindist > distance[0]) {
+                mindist = distance[0];
+                pos = i;
+            }
+        }
+        String distanceMeters = "Lähin Otto automaatti:\n" + markers.get(pos).getAddress() + " (" + String.format(Locale.ENGLISH, "%.1f", mindist) + "m)";
+        Toast.makeText(getApplicationContext(), distanceMeters, Toast.LENGTH_LONG).show();
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(markers.get(pos).getPosition(), mMap.getCameraPosition().zoom);
+        mMap.animateCamera(cameraUpdate);
+    }
+
 
 }
