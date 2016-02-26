@@ -9,7 +9,8 @@
     <string name="infowindow.tv.access.p">Puhetuettu Otto (normaali korkeus)</string>
     <string name="infowindow.tv.access.t">TalletusOtto</string>
 
-    <string name="google_app_id">YOUR_PROJECT_NUMBER</string>
+    <!-- Insert your own project number here YOUR_PROJECT_NUMBER -->
+    <string name="google_app_id">611316959333</string>
 
 
     <string name="error.message.playservices">Sovellus ei valitettavasti toimi tällä laitteella.</string>

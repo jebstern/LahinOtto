@@ -3,6 +3,7 @@ package com.jebstern.lahinotto;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -16,10 +17,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.support.design.widget.Snackbar;
-
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -52,8 +52,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static int UPDATE_INTERVAL = 10000; // 10 seconds
     private static int FATEST_INTERVAL = 5000; // 5 seconds
     private static int DISPLACEMENT = 10; // 10 meters
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-
+    private final static int REQUEST_GOOGLE_PLAY_SERVICES = 1000;
     private static final int REQUEST_MYLOCATION = 0;
 
 
@@ -116,7 +115,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
 
-
         mClusterManager = new ClusterManager<>(getApplicationContext(), mMap);
         mMap.setInfoWindowAdapter(mClusterManager.getMarkerManager());
 
@@ -166,7 +164,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_MYLOCATION);
         }
     }
-
 
 
     @Override
@@ -261,9 +258,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             double latitude = mLastLocation.getLatitude();
             double longitude = mLastLocation.getLongitude();
 
-            LatLng userPosition = new LatLng(latitude, longitude);
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userPosition, 15);
+            LatLng userPosition = new LatLng(latitude, longitude);  // Get the position of the user
+            float zoom = mMap.getCameraPosition().zoom; // Get the zoom level that the user is using.
+
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userPosition, zoom);
             mMap.animateCamera(cameraUpdate);
+
         } else {
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.error_message_location), Toast.LENGTH_LONG).show();
         }
@@ -277,15 +277,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    //  Method to verify google play services on the device
+    //  Method to verify google play services on the device. This is the new version: GoogleApiAvailability, not deprectaed GooglePlayServicesUtil
     private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.error_message_playservices), Toast.LENGTH_LONG).show();
-                finish();
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+        int result = googleAPI.isGooglePlayServicesAvailable(this);
+        if (result != ConnectionResult.SUCCESS) {
+            if (googleAPI.isUserResolvableError(result)) {
+                googleAPI.getErrorDialog(this, result, REQUEST_GOOGLE_PLAY_SERVICES).show();
             }
             return false;
         }

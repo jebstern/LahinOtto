@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Insert your onw Google Maps API key here  -->
+    <!-- 33 Insert your onw Google Maps API key here YOUR_MAPS_API_KEY -->
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
-        YOUR_MAPS_API_KEY
+        AIzaSyD1ksGc7l3hml6jyrjNsS0YG3DFjJ_17OQ
     </string>
 </resources>
